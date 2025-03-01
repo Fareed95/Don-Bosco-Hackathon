@@ -1,6 +1,10 @@
 "use client";
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
+import { useRoadmap } from '@/app/context/RoadmapContext';
+import { Timeline } from "@/components/ui/timeline";
+import { buttons } from "@/components/Button";
 import { motion } from "framer-motion";
 
 const RoadmapCard = ({ title, content, index }) => (
@@ -18,7 +22,12 @@ const RoadmapCard = ({ title, content, index }) => (
   </motion.div>
 );
 
-function Timeline_roadmap_function({ roadmapData, onStart }) {
+function Timeline_roadmap_function({ roadmapData }) {
+  const router = useRouter();
+  const { setRoadmap } = useRoadmap();
+
+  console.log("Timeline", roadmapData.first_component);
+
   if (!roadmapData) {
     return (
       <div className="min-h-[400px] flex items-center justify-center">
@@ -55,6 +64,18 @@ function Timeline_roadmap_function({ roadmapData, onStart }) {
     ),
   }));
 
+  const playlistButton = buttons.find(button => button.name === "Playlist");
+
+  const handleButtonClick = () => {
+    setRoadmap({
+      roadmap_id: roadmapData.roadmap_id,
+      total_components: roadmapData.total_components,
+      first_component: roadmapData.first_component
+    });
+
+    router.push('/Learning');
+  };
+
   return (
     <div className="min-h-screen bg-black p-6">
       <div className="max-w-4xl mx-auto space-y-8">
@@ -85,19 +106,19 @@ function Timeline_roadmap_function({ roadmapData, onStart }) {
         </div>
 
         {/* Action Button */}
-        {timelineData.length > 0 && (
+        {timelineData.length > 0 && playlistButton && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.2 }}
             className="flex justify-center"
           >
-            <button
-              onClick={onStart}
-              className="w-full bg-neutral-800 hover:bg-neutral-700 text-neutral-200 font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105"
-            >
-              START LEARNING
-            </button>
+            <div className="border border-neutral-800 p-6 rounded-xl w-full">
+              {React.cloneElement(playlistButton.component, {
+                onClick: handleButtonClick,
+                className: "w-full bg-neutral-800 hover:bg-neutral-700 text-neutral-200 font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105"
+              }, "START LEARNING")}
+            </div>
           </motion.div>
         )}
       </div>

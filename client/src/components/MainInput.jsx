@@ -1,12 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { PlaceholdersAndVanishInput } from "./ui/placeholders-and-vanish-input";
+import { useUserContext } from "@/app/context/Userinfo";
+import Timeline_roadmap_function from "./Timeline_roadmap";
 import { MultiStepLoader } from "./ui/multi-step-loader";
 import { motion } from 'framer-motion';
 
-function MainInput({ onSubmit }) {
+function MainInput() {
   const [inputValue, setInputValue] = useState("");
+  const [roadmapData, setRoadmapData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const { contextemail } = useUserContext();
+  
+  const MODEL_API_SERVER = process.env.NEXT_PUBLIC_MODEL_API_SERVER;
 
   const loadingStates = [
     {
@@ -26,14 +33,98 @@ function MainInput({ onSubmit }) {
     },
   ];
 
-  const handleSubmit = async (e) => {
+  const placeholders = [
+    "How can I learn advanced backend development?",
+    "How can I learn linear algebra?",
+    "How can I learn database optimization?",
+    "How can I learn to design scalable APIs?",
+    "How can I learn machine learning?",
+  ];
+
+  const handleChange = (e) => {
+    setInputValue(e.target.value);
+  };
+
+  const onSubmit = async (e) => {
     e.preventDefault();
-    if (!inputValue) return;
+    if (!inputValue || !contextemail || !MODEL_API_SERVER) return;
 
     setLoading(true);
-    await onSubmit(inputValue);
+    setRoadmapData(null);
+
+    const MAX_RETRIES = 5;
+    let attempts = 0;
+    let success = false;
+
+    while (attempts < MAX_RETRIES && !success) {
+      try {
+        const response = await fetch(`${MODEL_API_SERVER}/generate-roadmap-first-component`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            input_value: inputValue,
+            email: contextemail,
+          }),
+        });
+
+        if (!response.ok) {
+          attempts++;
+          if (attempts >= MAX_RETRIES) {
+            window.alert("Failed to load roadmap. Please try again.");
+          }
+        } else {
+          const data = await response.json();
+          setRoadmapData(data);
+          console.log("Roadmap data loaded successfully:", data);
+          success = true;
+        }
+      } catch (error) {
+        console.error(`Attempt ${attempts + 1} failed:`, error);
+        attempts++;
+        if (attempts >= MAX_RETRIES) {
+          window.alert("Failed to load roadmap. Please try again.");
+        }
+      }
+    }
+
     setLoading(false);
   };
+
+  useEffect(() => {
+  const fetchFullRoadmap = async () => {
+    if (!roadmapData?.roadmap_id) return;
+
+    console.log("Sending request to generate-roadmap-all for roadmap_id:", roadmapData.roadmap_id);
+    
+    try {
+      const response = await fetch(`${MODEL_API_SERVER}/generate-roadmap-all`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id: roadmapData.roadmap_id }),
+      });
+
+      console.log("Response:", response);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Roadmap all generated successfully:", data);
+
+    } catch (error) {
+      console.error("Error generating full roadmap:", error);
+    }
+  };
+
+  fetchFullRoadmap();
+}, [roadmapData]);
+
+  
 
   return (
     <div className="max-w-4xl mx-auto w-full px-4">
@@ -43,12 +134,12 @@ function MainInput({ onSubmit }) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-4">
+        <form onSubmit={onSubmit} className="flex flex-col md:flex-row gap-4">
           <input
             type="text"
             placeholder="Tell us what you want to learn..."
             value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
+            onChange={handleChange}
             className="flex-1 bg-neutral-800/50 text-white placeholder-neutral-400 border border-neutral-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-neutral-600 transition-all duration-300"
           />
           <button
@@ -72,6 +163,12 @@ function MainInput({ onSubmit }) {
             duration={1000}
             loop={true}
           />
+        </div>
+      )}
+
+      {roadmapData && !loading && (
+        <div className="mt-8 w-full p-6 rounded-xl page-transition">
+          <Timeline_roadmap_function roadmapData={roadmapData} />
         </div>
       )}
     </div>
