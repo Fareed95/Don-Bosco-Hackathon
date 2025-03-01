@@ -1,12 +1,37 @@
-"use client";
 import React from 'react';
+import Map from './Map';
 import Image from 'next/image';
 import { AnimatedTooltip } from "@/components/ui/animated-tooltip";
 import { cn } from "@/lib/utils";
 import Link from 'next/link';
 import { LinkPreview } from "@/components/ui/link-preview";
+import FareedImage from "../../public/Fareed.jpg"; 
 
-function Footer({ contributors }) {
+function Footer() {
+  const people = [
+    {
+      id: 1,
+      name: "Nitin Gupta",
+      designation: "UI/UX Designer & Frontend Developer",
+      image: "https://avatars.githubusercontent.com/u/140688515?s=400&u=2c964b96bb84104da1515a863e6425e70063d854&v=4",
+      github: "https://github.com/nitin14gupta",
+    },
+    {
+      id: 2,
+      name: "Fareed Sayyed",
+      designation: "ML and Backend Developer",
+      image: FareedImage,
+      github: "https://github.com/Fareed95",
+    },
+    {
+      id: 3,
+      name: "Rehbar Khan",
+      designation: "Frontend Developer",
+      image: "https://avatars.githubusercontent.com/u/136853370?v=4",
+      github: "https://github.com/thisisarsh1",
+    }
+  ];
+
   return (
     <div className='flex flex-col'>
       <footer className={cn("py-6 bg-neutral-glass border-t border-glass-border")}>
@@ -22,6 +47,19 @@ function Footer({ contributors }) {
             <div className="bg-neutral-glass border border-glass-border p-6 rounded-xl backdrop-blur-md hover:bg-glass-hover transition-all duration-300">
               <h4 className="text-lg font-semibold text-neutral-text">Contributors</h4>
               <div className="flex flex-row items-center justify-center mb-10 w-full">
+                {people.map((person) => (
+                  <Link
+                    key={person.id}
+                    href={person.github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="transform transition-transform hover:scale-105"
+                  >
+                    <div className="cursor-pointer">
+                      <AnimatedTooltip items={[person]} />
+                    </div>
+                  </Link>
+                ))}
               </div>
               <div className="space-y-2">
                 <p className="flex items-center space-x-2">
