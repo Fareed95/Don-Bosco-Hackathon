@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 
 function GetUserInfo() {
   const { toast } = useToast();
-  const { contextsetIsLoggedIn, contextsetEmail, contextsetName, contextisLoggedIn,contextsetId } = useUserContext();
+  const { contextsetIsLoggedIn, contextsetEmail, contextsetName,contextorganisation, contextisLoggedIn,contextsetorganisation } = useUserContext();
 
   const getUserInfo = async () => {
     const token = localStorage.getItem('authToken');
@@ -46,6 +46,10 @@ function GetUserInfo() {
 
       const result = await response.json();
       console.log('ID', result);
+      if(result.is_company==true){
+        contextsetorganisation(result.companies)
+      }
+
       // contextsetId(result.userdetails[0].id);
       // Update context with user information
       contextsetIsLoggedIn(true);

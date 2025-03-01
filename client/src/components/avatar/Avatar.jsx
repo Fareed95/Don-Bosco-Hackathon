@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Volume2, VolumeX, Settings } from 'lucide-react';
+import { useUserContext } from '@/app/context/Userinfo';
 
 const HeroBackground = () => (
   <div className="absolute inset-0 -z-10 overflow-hidden">
@@ -14,6 +15,7 @@ const HeroBackground = () => (
 );
 
 const Avatar = () => {
+  const {contextname} = useUserContext();
   const [isExpanded, setIsExpanded] = useState(true);
   const [isListening, setIsListening] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState('en');
@@ -170,7 +172,9 @@ const Avatar = () => {
     speak(sampleText);
     setIsLoading(false);
   };
-
+useEffect(() => {
+  handleUserInput("hello")
+}, [contextname ]);
   return (
     <div className="w-full h-full relative">
       {/* Background with reduced opacity */}

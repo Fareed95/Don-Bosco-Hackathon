@@ -43,6 +43,61 @@ const Page = () => {
   };
 
   // Initialize devices on component mount
+
+
+
+
+
+  const sendAnswer = async () => {
+
+ 
+
+    
+
+    try {
+      const response = await fetch('http://localhost:8010/api/interviews/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          "interviewee_email": "johnyyy8y@gmail.com",
+          "interviewee_name": "John Doe",
+          "course_name": "Django",
+          "company_email": "hrhumapi@gmail.com",
+          "company_data": "Company Name: TechNova Solutions\nIndustry: Software Development\nLocation: Bangalore, India\nWebsite: www.technova.com\nDescription: TechNova Solutions is a leading software development company specializing in innovative tech solutions for businesses worldwide.\nContact Email: hr@technova.com\nPhone: +91 9876543210",
+          "internship_data": "Internship Title: Software Development Intern\nDepartment: Engineering\nDuration: 6 months\nStipend: ₹10,000 per month\nLocation: Remote / Bangalore Office\nEligibility: Pursuing B.Tech/B.E. in Computer Science or related field, Knowledge of Python, JavaScript, and basic web development, Good problem-solving skills\nResponsibilities: Assist in developing web applications using React and Django, Collaborate with the team on software projects, Write clean and maintainable code, Participate in code reviews and testing\nPerks: Certificate of Internship, Letter of Recommendation, Flexible work hours, Opportunity for a full-time role based on performance\nApplication Deadline: March 15, 2025\nHow to Apply: Send your resume to internships@technova.com",
+           "answer": "Not",
+          "question_id": 17
+      }),
+      });
+
+      // Log the response status and status text
+      console.log('Response Status:', response.status, response.statusText);
+
+      if (!response.ok) {
+        console.error("Error from sending AI:", response);
+    
+        return;
+      }
+
+      const result = await response.json();
+      console.log(result);
+
+      
+
+    } catch (error) {
+      console.error("Error sending to AI", error);
+
+    }
+  };
+
+
+useEffect(() => {
+  sendAnswer()
+}, [transcript]);
+
+
   useEffect(() => {
     getVideoDevices();
   }, []);
@@ -114,6 +169,7 @@ const Page = () => {
           // This is a final result (sentence ended naturally)
           finalTranscript += transcriptText;
           console.log('Final speech (sentence complete):', transcriptText);
+
           setTranscript(transcriptText);
         } else {
           // This is an interim result
