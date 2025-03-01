@@ -62,4 +62,4 @@ if __name__ == "__main__":
 
     result = roadmap(input_value="drafting in laws")
     result_json = json.loads(result)
-    print(result_json[0])
+    print(result_json[0]['name'])
