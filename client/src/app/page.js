@@ -1,101 +1,213 @@
-import Image from "next/image";
+"use client";
+
+import { motion } from 'framer-motion';
+import MainInput from '@/components/MainInput';
+import Footer from '@/components/Footer';
+import { useEffect, useState } from 'react';
+import TrueFocus from '@/components/TrueFocus';
+import Leaderboard from '@/components/Leaderboard';
+import SplashCursor from '@/components/SplashCursor';
+
+const fadeIn = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.5 }
+};
+
+const HeroBackground = () => (
+  <div className="absolute inset-0 -z-10 overflow-hidden">
+    {/* Neutral gradient background */}
+    <div className="absolute inset-0 bg-neutral-950" />
+    
+    {/* Subtle grid */}
+    <div className="absolute inset-0 bg-grid-small-white/[0.05] -z-10" />
+    
+    {/* Subtle dots */}
+    <div className="absolute inset-0 bg-dot-white/[0.05] [mask-image:radial-gradient(ellipse_at_center,white,transparent)]" />
+    
+    {/* Gentle radial gradient */}
+    <div className="absolute inset-0 bg-gradient-radial from-white/10 via-transparent to-transparent" />
+  </div>
+);
+
+const FloatingElements = () => {
+  const elements = [
+    { icon: "🎓", delay: 0 },
+    { icon: "💡", delay: 0.2 },
+    { icon: "📚", delay: 0.4 },
+    { icon: "🚀", delay: 0.6 },
+    { icon: "💻", delay: 0.8 },
+  ];
+
+  return (
+    <div className="absolute inset-0 -z-5 overflow-hidden">
+      {elements.map((el, index) => (
+        <motion.div
+          key={index}
+          className="absolute text-4xl"
+          initial={{ opacity: 0, y: 100 }}
+          animate={{ 
+            opacity: [0.5, 1, 0.5],
+            y: [-20, 20, -20],
+            x: index % 2 === 0 ? [-20, 20, -20] : [20, -20, 20]
+          }}
+          transition={{
+            duration: 5,
+            delay: el.delay,
+            repeat: Infinity,
+            repeatType: "reverse"
+          }}
+          style={{
+            left: `${(index + 1) * 15}%`,
+            top: `${(index + 1) * 10}%`
+          }}
+        >
+          {el.icon}
+        </motion.div>
+      ))}
+    </div>
+  );
+};
+
+// Test component data for debugging
+const testComponentData = {
+  name: "Introduction to React",
+  description: "Learn the basics of React",
+  topics: ["JSX", "Components", "Props", "State"],
+  difficulty: "Beginner"
+};
 
 export default function Home() {
+  const [mounted, setMounted] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [currentLanguage, setCurrentLanguage] = useState('en');
+  const [response, setResponse] = useState('');
+  const [messages, setMessages] = useState();
+  const [isLoading, setIsLoading] = useState(false);
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <main className="relative min-h-screen">
+      <HeroBackground />
+      <FloatingElements />
+      <SplashCursor />
+      
+      <div className="flex flex-col">
+        <motion.section 
+          className="mt-32 relative"
+          initial="initial"
+          animate="animate"
+          variants={fadeIn}
+        >
+          {/* Hero Section */}
+          <div className="text-center mb-12 space-y-6">
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              <TrueFocus
+                sentence="Learn Grow Excel"
+                manualMode={false}
+                blurAmount={3}
+                borderColor="#ffffff"
+                glowColor="rgba(255, 255, 255, 0.5)"
+                animationDuration={0.2}
+                pauseBetweenAnimations={2}
+              />
+            </motion.div>
+            <motion.p 
+              className="text-lg md:text-xl text-neutral-400 max-w-2xl mx-auto"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+            >
+              Discover personalized learning paths and connect with expert mentors to achieve your goals.
+            </motion.p>
+          </div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+          {/* Search Section */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.6 }}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            <MainInput />
+          </motion.div>
+        </motion.section>
+
+        {/* Features Section */}
+        <motion.section 
+          className="mt-20 px-4"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.8 }}
+        >
+          <div className="max-w-7xl mx-auto">
+            <h2 className="text-3xl font-bold text-neutral-200 text-center mb-8">
+              Why Choose Us?
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {[
+                {
+                  icon: "🎯",
+                  title: "Personalized Learning",
+                  description: "Tailored paths that adapt to your goals and pace"
+                },
+                {
+                  icon: "👥",
+                  title: "Expert Mentors",
+                  description: "Learn from industry professionals who've been there"
+                },
+                {
+                  icon: "📈",
+                  title: "Track Progress",
+                  description: "Monitor your growth with detailed analytics"
+                }
+              ].map((feature, index) => (
+                <motion.div
+                  key={feature.title}
+                  className="glass p-6 rounded-xl text-center"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.8 + (index * 0.1) }}
+                >
+                  <span className="text-4xl mb-4 block">{feature.icon}</span>
+                  <h3 className="text-xl font-semibold text-neutral-200 mb-2">
+                    {feature.title}
+                  </h3>
+                  <p className="text-neutral-400">
+                    {feature.description}
+                  </p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </motion.section>
+
+        <motion.section 
+          className="mt-20"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 1 }}
+        >
+        </motion.section>
+
+        <motion.section 
+          className="mt-20"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 1.2 }}
+        >
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 1.2 }}
           >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+            <Footer />
+          </motion.div>
+          
+        </motion.section>
+      </div>
+    </main>
   );
 }
