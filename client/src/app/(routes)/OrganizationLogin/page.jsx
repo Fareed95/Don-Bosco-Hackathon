@@ -102,7 +102,7 @@ function Login() {
         title: "There was an error",
         description: error.message,
       });
-      console.error("Error fetching user info:", error);
+      console.error("Error fetching Organisation info:", error);
     }
   };
 
@@ -119,7 +119,7 @@ function Login() {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password,is_company:true }),
       });
 
       // Log the response status and status text
@@ -239,6 +239,7 @@ function Login() {
   //     OAuth();
   //   }
   // },[name,email])
+  console.log(name, email)
 
   const OAuth = async () => {
 
@@ -249,7 +250,7 @@ function Login() {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({ name, email }),
+        body: JSON.stringify({ name, email,is_company:true }),
       });
 
       // Log the response status and status text

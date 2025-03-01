@@ -54,6 +54,7 @@ function SignUp() {
           email,
           password,
           confirm_password,
+          is_company:true 
         }),
       });
 

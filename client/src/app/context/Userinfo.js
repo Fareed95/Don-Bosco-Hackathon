@@ -9,6 +9,7 @@ const UserContext = createContext({
   contextinput: '',
   contextname: '',
   contextpassword: '',
+  contextInterviewdeets: '',
   contextorganisation: '',
   contextisLoggedIn: false,
   contextQRInfo: '',
@@ -27,6 +28,7 @@ const UserContext = createContext({
   contextsetimg: () => {},
   contextSetSelectedPerson: () => {},
   setcontextInterview: () => {},
+  setcontextInterviewdeets: () => {},
 
 });
 
@@ -38,6 +40,7 @@ export const UserProvider = ({ children }) => {
   const [contextpassword, contextsetPassword] = useState('');
   const [contextQRInfo, contextsetQRInfo] = useState('');
   const [contextInterview, setcontextInterview] = useState('');
+  const [contextInterviewdeets, setcontextInterviewdeets] = useState('');
   const [contextorganisation, contextsetorganisation] = useState([]);
   const [contextSelectedPerson, contextSetSelectedPerson] = useState('');
   const [contextisLoggedIn, contextsetIsLoggedIn] = useState(false);
@@ -45,6 +48,8 @@ export const UserProvider = ({ children }) => {
   
   const value = {
     contextInterview,
+    contextInterviewdeets,
+    setcontextInterviewdeets,
     setcontextInterview,
     contextemail,
     contextId,

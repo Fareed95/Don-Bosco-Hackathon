@@ -311,7 +311,7 @@ function Login() {
     className="mt-4 w-full"
   >
     <button className="w-full py-2 px-4 text-white bg-blue-600 hover:bg-blue-700 transition-all rounded-lg font-medium">
-      Continue as User
+      Continue as Organisation
     </button>
   </Link>
 </div>

@@ -7,6 +7,7 @@ import PrevCources from '@/components/PrevCources';
 import { Calendar, Users } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { AnimatedTooltip } from "@/components/ui/animated-tooltip";
+import { useRouter, useParams } from 'next/navigation';
 
 const HeroBackground = () => (
   <div className="absolute inset-0 -z-10 overflow-hidden">
@@ -56,7 +57,7 @@ const UserInfoPage = () => {
   const [interviewreview, setInterviewreview] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const { data: session } = useSession();
-  const { contextsetIsLoggedIn, contextsetEmail, contextsetName,contextisLoggedIn} = useUserContext(); // Updated hook
+  const { contextsetIsLoggedIn, contextsetEmail, contextsetName,contextisLoggedIn,setcontextInterviewdeets,contextInterviewdeets} = useUserContext(); // Updated hook
 
   const Getuserinfo = async () => {
     const token = localStorage.getItem('authToken');
@@ -123,7 +124,7 @@ const UserInfoPage = () => {
 
     Getuserinfo();
   }, [contextisLoggedIn]);
-
+  const router = useRouter();
   const handleUpdatePreferences = async (key, value) => {
     setUserDetails(prev => ({
       ...prev,
@@ -152,7 +153,13 @@ const UserInfoPage = () => {
   ];
 
 
-
+  const handleJoinMeet = (slot) => {
+    // Set the context with the interview details
+    setcontextInterviewdeets(slot);
+    router.push('/AiInterview');
+    console.log(contextInterviewdeets);
+    // Optionally, you can navigate to another page or perform additional actions here
+  };
 
   return (
     <div className="min-h-screen pt-24 pb-12 px-4 bg-neutral-950">
@@ -235,28 +242,30 @@ const UserInfoPage = () => {
             </div>
 
             <div className="space-y-4">
-              {interviewSlots.length > 0 ? (
-                interviewSlots.map((slot) => (
-                  <div className="border border-neutral-700 p-4 rounded-lg bg-neutral-800">
-                  <div className='flex justify-between items-center'>
-                    <h4 className="text-neutral-200 font-semibold text-xl">{slot.internship_name}</h4>
-                    <p className="text-neutral-400 text-md">{slot.company_name}</p>
-                    <p className="text-neutral-400 text-md">{new Date(slot.interviw_time).toLocaleString()}</p>
-                   
-                    {slot.is_selected && (
-                      <div>
-                        <a href={`/VideoCall/${slot.company_name}`}>
-                          <button className='bg-green-900 p-2 m-2 text-white rounded-full px-4'>Join Meet</button>
-                        </a>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                ))
-              ) : (
-                <p className="text-neutral-400 text-center py-4">No interview slots scheduled</p>
-              )}
+  {interviewSlots.length > 0 ? (
+    interviewSlots.map((slot) => (
+      <div key={slot.id} className="border border-neutral-700 p-4 rounded-lg bg-neutral-800">
+        <div className='flex justify-between items-center'>
+          <h4 className="text-neutral-200 font-semibold text-xl">{slot.internship_name}</h4>
+          <p className="text-neutral-400 text-md">{slot.company_name}</p>
+          <p className="text-neutral-400 text-md">{new Date(slot.interviw_time).toLocaleString()}</p>
+          {slot.is_selected && (
+            <div>
+              <button
+                onClick={() => handleJoinMeet(slot)}
+                className='bg-green-900 p-2 m-2 text-white rounded-full px-4'
+              >
+                Join Meet
+              </button>
             </div>
+          )}
+        </div>
+      </div>
+    ))
+  ) : (
+    <p className="text-neutral-400 text-center py-4">No interview slots scheduled</p>
+  )}
+</div>
 
           </motion.div>
           <motion.div
@@ -283,9 +292,9 @@ const UserInfoPage = () => {
                    
                     {slot.is_selected && (
                       <div>
-                        <a href={`/VideoCall/${slot.company_name}`}>
+                        <div onClick={handleJoinMeet}>
                           <button className='bg-green-900 p-2 m-2 rounded-full px-4 text-white'>Join Meet</button>
-                        </a>
+                        </div>
                       </div>
                     )}
                   </div>

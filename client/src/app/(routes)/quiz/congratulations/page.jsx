@@ -19,8 +19,8 @@ function CongratulationsPage() {
   const total = parseInt(searchParams.get('total') || '12');
   const theme = searchParams.get('theme') || 'Quiz';
   const percentage = Math.round((score / total) * 100);
+  const [roadmapId, setRoadmapId] = useState(null);
   const { roadmap } = useRoadmap();
-
   const getUserInfo = async () => {
     try {
       const response = await fetch(`http://localhost:8000/api/userdetails/${contextemail}/`, {
@@ -59,6 +59,15 @@ function CongratulationsPage() {
       console.error('Error downloading certificate:', error);
     }
   };
+  useEffect(() => {
+    if (roadmap?.roadmap_id) {
+      console.log("idhar ka roadmap ka id hai0",roadmap.roadmap_id)
+      setRoadmapId(roadmap.roadmap_id);
+    } else {
+      // router.push('/');
+      console.log("idhar ka roadmap ka id hai1",roadmap.roadmap_id)
+    }
+  }, [roadmap]);
 
   const handleDownloadCertificate = async () => {
     try {
@@ -118,7 +127,7 @@ function CongratulationsPage() {
       console.log("Roadmap title:", roadmap.title);
       console.log("email:", contextemail);
   
-      const response = await fetch(`http://localhost:8000/api/apply/`, {
+      const response = await fetch(`http://localhost:8000/api/apply/${contextemail}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
