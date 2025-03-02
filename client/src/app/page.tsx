@@ -7,7 +7,7 @@ import Footer from '@/components/Footer';
 import { useEffect, useState } from 'react';
 import TrueFocus from '@/components/TrueFocus';
 // import Leaderboard from '@/components/Leaderboard';
-import SplashCursor from '@/components/SplashCursor';
+// import SplashCursor from '@/components/SplashCursor';
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -173,7 +173,7 @@ export default function Home() {
     <main className="relative min-h-screen">
       <HeroBackground />
       <FloatingElements />
-      <SplashCursor /> 
+      {/* <SplashCursor />  */}
       
       <div className="flex flex-col">
         <motion.section 

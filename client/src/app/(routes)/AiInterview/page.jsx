@@ -7,7 +7,7 @@ import Avatar from '@/components/avatar/Avatar';
 import { useUserContext } from '@/app/context/Userinfo';
 
 const Page = () => {
-  const { setcontextInterview,contextInterview ,contextInterviewdeets} = useUserContext(); // Updated hook
+  const { setcontextInterview,contextInterview ,contextInterviewdeets,contextemail} = useUserContext(); // Updated hook
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState(null);
   const [devices, setDevices] = useState([]);
@@ -17,6 +17,15 @@ const Page = () => {
 
   // Speech recognition states
   const [isListening, setIsListening] = useState(false);
+
+  const [interviewee_name, setinterviewee_name] = useState('');
+  const [course_name, setcourse_name] = useState('');
+  const [company_email, setcompany_email] = useState('');
+  const [company_data, setcompany_data] = useState('');
+  const [internship_data, setinternship_data] = useState('');
+  const [ans,setans] = useState('Not');
+  const [ID, setID] = useState(1);
+
   const [transcript, setTranscript] = useState('');
   const [recognition, setRecognition] = useState(null);
   const timeoutRef = useRef(null);
@@ -27,6 +36,11 @@ const Page = () => {
   const [response, setResponse] = useState('')
 
   useEffect(() => {
+    setcompany_data(contextInterviewdeets.company_description)
+    setcompany_email(contextInterviewdeets.company_email)
+    setinternship_data(contextInterviewdeets.internship_description)
+    setcourse_name(contextInterviewdeets.internship_name)
+    setinterviewee_name(contextInterviewdeets.user_name)
     console.log(contextInterviewdeets)
   }, [contextInterviewdeets]);
   
@@ -43,16 +57,24 @@ const Page = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          "interviewee_email": "johnyyy8y@gmail.com",
-          "interviewee_name": "John Doe",
-          "course_name": "Django",
-          "company_email": "hrhumapi@gmail.com",
-          "company_data": "Company Name: TechNova Solutions\nIndustry: Software Development\nLocation: Bangalore, India\nWebsite: www.technova.com\nDescription: TechNova Solutions is a leading software development company specializing in innovative tech solutions for businesses worldwide.\nContact Email: hr@technova.com\nPhone: +91 9876543210",
-          "internship_data": "Internship Title: Software Development Intern\nDepartment: Engineering\nDuration: 6 months\nStipend: ₹10,000 per month\nLocation: Remote / Bangalore Office\nEligibility: Pursuing B.Tech/B.E. in Computer Science or related field, Knowledge of Python, JavaScript, and basic web development, Good problem-solving skills\nResponsibilities: Assist in developing web applications using React and Django, Collaborate with the team on software projects, Write clean and maintainable code, Participate in code reviews and testing\nPerks: Certificate of Internship, Letter of Recommendation, Flexible work hours, Opportunity for a full-time role based on performance\nApplication Deadline: March 15, 2025\nHow to Apply: Send your resume to internships@technova.com",
-           "answer": "Not",
-          "question_id": 17
+          "interviewee_email": contextemail,
+          "interviewee_name":interviewee_name,
+          "course_name": course_name,
+          "company_email": company_email,
+          "company_data": company_data,
+          "internship_data": internship_data,
+           "answer":ans,
+          "question_id": ID
       }),
       });
+      console.log(contextemail)
+      console.log(interviewee_name)
+      console.log(course_name)
+      console.log(company_email)
+      console.log(company_data)
+      console.log(internship_data)
+      console.log(ans)
+      console.log(ID)
 
       // Log the response status and status text
       console.log('Response Status:', response.status, response.statusText);
@@ -66,7 +88,8 @@ const Page = () => {
       const result = await response.json();
       
       setResponse(result.question)
-   
+      setID(result.question_id)
+      console.log("result",result)
 
     } catch (error) {
       console.error("Error Getting from Ai", error);
@@ -75,8 +98,11 @@ const Page = () => {
   };
 
   useEffect(() => {
-    Interview()
-  }, []);
+    if(company_email){
+      Interview()
+    }
+  
+  }, [ transcript,company_email]);
 
   useEffect(() => {
     console.log(response);
@@ -103,7 +129,7 @@ const Page = () => {
   // Initialize devices on component mount
   useEffect(() => {
     getVideoDevices();
-  }, []);
+  }, [internship_data]);
 
   // Start or stop the camera
   const toggleCamera = async () => {
@@ -267,7 +293,15 @@ const Page = () => {
       }
     };
   }, []);
- 
+  useEffect(() => {
+    if(transcript!==''){
+      setans(transcript)
+
+    }
+    if(ID!==1){
+      setans(transcript)
+    }
+  }, [transcript]);
   return (
     <div className="flex flex-col min-h-screen bg-neutral-950 ">
       {/* Main Content */}

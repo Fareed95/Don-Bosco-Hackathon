@@ -8,7 +8,7 @@ import { useSession } from "next-auth/react";
 // import MemberManagement from "@/components/dashboard/organization/MemberManagement";
 // import CourseLibrary from "@/components/dashboard/organization/CourseLibrary";
 import OrgAnalytics from "@/components/dashboard/organization/OrgAnalytics";
-// import OrgSettings from "@/components/dashboard/organization/OrgSettings";
+import OrgSettings from "@/components/dashboard/organization/OrgSettings";
 import InterviewPanels from "@/components/dashboard/organization/InterviewPanels";
 // import Forms from "@/components/dashboard/organization/InternshipForm";
 
@@ -20,6 +20,7 @@ export default function OrganizationDashboard() {
   const tabs = [
     { id: "analytics", label: "Analytics" },
     { id: "interviews", label: "Interviews" },
+    { id: "settings", label: "Settings"}
   ];
 
   const renderContent = () => {
@@ -28,6 +29,8 @@ export default function OrganizationDashboard() {
         return <OrgAnalytics />;
       case "interviews":
         return <InterviewPanels />;
+      case "settings":
+        return <OrgSettings />;
       default:
         return null;
     }

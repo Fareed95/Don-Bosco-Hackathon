@@ -3,12 +3,12 @@
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { FaUsers, FaGraduationCap, FaLightbulb, FaChartLine } from 'react-icons/fa';
+import { ArrowRight} from 'lucide-react'
 import NitinImage from '../../../../public/Nitin.jpg';
 import FareedImage from '../../../../public/Fareed.jpg';
 import RouteNavigator from '@/components/RouteNavigator';
 import InternshipForm from '@/components/dashboard/organization/InternshipForm';
-
-
+import { useRouter } from 'next/navigation';
 const HeroBackground = () => (
   <div className="absolute inset-0 -z-10 overflow-hidden">
     {/* Enhanced gradient background */}
@@ -106,6 +106,7 @@ const itemVariants = {
 };
 
 export default function AboutPage() {
+const router = useRouter();
   return (
     <div className="min-h-screen bg-neutral-950 relative overflow-hidden">
       <HeroBackground />
@@ -131,6 +132,18 @@ export default function AboutPage() {
       </section>
 
         <InternshipForm />
+
+           {/* Community Button */}
+           <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => router.push('/Lobby')}
+              className="w-full px-6 py-4 mb-8 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl flex items-center justify-center space-x-2 transition-all duration-200 font-semibold shadow-lg hover:shadow-blue-500/25"
+            >
+              <span>Join the Community</span>
+              <ArrowRight className="w-5 h-5" />
+            </motion.button>
+
 
       <motion.section 
           className="mt-20 px-4"

@@ -14,8 +14,8 @@ const fadeIn = {
 };
 
 export default function Home() {
-  const {contextsetinput,contextinput} = useUserContext();
-  const { roadmap } = useRoadmap();
+  const { contextsetinput, contextinput } = useUserContext();
+  const { setRoadmap, roadmap } = useRoadmap();
   const [componentData, setComponentData] = useState(null);
   const [total, setTotal] = useState(null);
   const [quizAnswers, setQuizAnswers] = useState({});
@@ -29,12 +29,17 @@ export default function Home() {
   const MODEL_API_SERVER = process.env.NEXT_PUBLIC_MODEL_API_SERVER;
   const DJANGO_API_SERVER = process.env.NEXT_PUBLIC_DJANGO_API_SERVER;
 
+
   useEffect(() => {
     if (roadmap?.roadmap_id) {
-      console.log("idhar ka roadmap ka id hai0",roadmap.roadmap_id)
+      console.log("Id in learning page 1 context :", roadmap.roadmap_id);
+      console.log("total components in learning page", roadmap.total_components)
+      console.log("first components in learning page", roadmap.first_component)
       setRoadmapId(roadmap.roadmap_id);
       fetchRoadmapData(roadmap.roadmap_id);
-    } else {
+      setTotal(roadmap.total_components)
+    }
+    else {
       router.push('/');
     }
   }, [roadmap]);
@@ -44,7 +49,7 @@ export default function Home() {
       if (componentNumber == 0) {
         console.log("Setting first component data:", roadmap.first_component);
         setComponentData(roadmap.first_component);
-        console.log("roadmap",roadmap)
+        console.log("roadmap", roadmap)
       } else {
         const response = await fetch(`${MODEL_API_SERVER}/roadmaps/${roadmapId}/component`, {
           method: 'POST',
@@ -53,11 +58,11 @@ export default function Home() {
           },
           body: JSON.stringify({ component_number: componentNumber }),
         });
-  
+
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
-  
+
         const data = await response.json();
         console.log("Fetched component data:", data);
         contextsetinput(data.name)
@@ -78,17 +83,18 @@ export default function Home() {
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
-      console.log("Idhar ka id",roadmapId)
+      console.log("Idhar ka id", roadmapId)
       const data = await response.json();
-      console.log("idhar dekhna hai",data)
-      console.log("to is completed hogayle hai",data.is_completed)
-      setIsCompleted(roadmap.is_completed);
-      setTotal(data.roadmap_json.total_components);
+      console.log("idhar dekhna hai", data)
+      console.log("to is completed hogayle hai", data.is_completed)
+      setIsCompleted(data.is_completed);
+      setCurrentComponentIndex(data.is_completed)
+      // setTotal(roadmap.total_components);
       // console.log("Total components:", data.roadmap_json.total_components);
       fetchComponentData(roadmapId, data.is_completed);
       // json = JSON.stringify(componentData);
       // chatBot(componentData.name, json);
-      console.log( data.is_completed ,roadmapId );
+      console.log(data.is_completed, roadmapId);
     } catch (error) {
       console.error("Error fetching roadmap data:", error);
       setError("Failed to fetch roadmap data. Please try again.");
@@ -100,14 +106,14 @@ export default function Home() {
     console.log("Updated isCompleted:", isCompleted);
   }, [isCompleted]);
 
-    useEffect(() => {
+  useEffect(() => {
     console.log("checking the component data:", isCompleted);
   }, [isCompleted]);
 
-  
+
 
   const handleNextComponent = async () => {
-    console.log("Totals",total);
+    console.log("Totals", total);
     if (currentComponentIndex + 1 < total) {
       try {
         const newCompletedIndex = currentComponentIndex + 1;
@@ -134,7 +140,9 @@ export default function Home() {
         setError("Failed to update completion status. Please try again.");
       }
     } else {
-
+      setRoadmap({
+        roadmap_id: roadmapId,
+      });
       router.push('/quiz');
     }
   };
@@ -179,8 +187,8 @@ export default function Home() {
     setQuizCompleted(allQuestionsAnswered);
   };
 
-    
-   
+
+
 
   useEffect(() => {
     checkQuizCompletion();
@@ -241,7 +249,7 @@ export default function Home() {
           <Head>
             <title>{componentData.name}</title>
           </Head>
-  
+
           <motion.div {...fadeIn} className="w-full max-w-7xl mx-auto bg-neutral-900/30 border border-neutral-800/50 rounded-2xl shadow-2xl p-8 backdrop-blur-sm">
             {/* Progress Header */}
             <div className="flex items-center justify-between mb-10">
@@ -250,13 +258,13 @@ export default function Home() {
                 <div className="flex items-center space-x-3 mt-2">
                   <BarChart className="w-5 h-5 text-neutral-400" />
                   <div className="w-full bg-neutral-800/50 h-2 rounded-full overflow-hidden">
-                    <div 
+                    <div
                       className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-300"
-                      style={{ width: `${Math.round(((currentComponentIndex+1) / total) * 100)}%` }}
+                      style={{ width: `${Math.round(((currentComponentIndex + 1) / total) * 100)}%` }}
                     />
                   </div>
                   <span className="text-neutral-400 text-sm">
-                    {Math.round(((currentComponentIndex+1) / total) * 100)}%
+                    {Math.round(((currentComponentIndex + 1) / total) * 100)}%
                   </span>
                 </div>
               </div>
@@ -270,7 +278,7 @@ export default function Home() {
                 <Award className="w-8 h-8 text-blue-500" />
               </div>
             </div>
-  
+             
             {/* Video Section */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -299,7 +307,7 @@ export default function Home() {
                 </motion.div>
               ))}
             </motion.div>
-  
+
             {/* Description Section */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -310,7 +318,9 @@ export default function Home() {
               <h2 className="text-xl font-bold text-neutral-200 mb-4">Overview</h2>
               <p className="text-neutral-300">{componentData.description}</p>
             </motion.div>
-  
+
+
+
             {/* Supplementary Materials Section */}
             {/* <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -342,7 +352,9 @@ export default function Home() {
                 </motion.a>
               </div>
             </motion.div> */}
-  
+
+
+
             {/* Next Component Button */}
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -353,6 +365,18 @@ export default function Home() {
               <span>Continue to Next Component</span>
               <ArrowRight />
             </motion.button>
+
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => router.push('/Lobby')}
+              className="w-full px-6 py-4 mb-8 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl flex items-center justify-center space-x-2 transition-all duration-200 font-semibold shadow-lg hover:shadow-blue-500/25"
+            >
+              <span>Join the Community</span>
+              <ArrowRight className="w-5 h-5" />
+            </motion.button>
+
+            
           </motion.div>
         </div>
       ) : (
@@ -360,7 +384,7 @@ export default function Home() {
           <Head>
             <title>{componentData.component.name}</title>
           </Head>
-  
+
           <motion.div {...fadeIn} className="w-full max-w-7xl mx-auto bg-neutral-900/30 border border-neutral-800/50 rounded-2xl shadow-2xl p-8 backdrop-blur-sm">
             {/* Progress Header */}
             <div className="flex items-center justify-between mb-10">
@@ -369,13 +393,13 @@ export default function Home() {
                 <div className="flex items-center space-x-3 mt-2">
                   <BarChart className="w-5 h-5 text-neutral-400" />
                   <div className="w-full bg-neutral-800/50 h-2 rounded-full overflow-hidden">
-                    <div 
+                    <div
                       className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-300"
-                      style={{ width: `${Math.round(((currentComponentIndex+1) / total) * 100)}%` }}
+                      style={{ width: `${Math.round(((currentComponentIndex + 1) / total) * 100)}%` }}
                     />
                   </div>
                   <span className="text-neutral-400 text-sm">
-                    {Math.round(((currentComponentIndex+1) / total) * 100)}%
+                    {Math.round(((currentComponentIndex + 1) / total) * 100)}%
                   </span>
                 </div>
               </div>
@@ -389,7 +413,7 @@ export default function Home() {
                 <Award className="w-8 h-8 text-electric-blue" />
               </div>
             </div>
-  
+
             {/* Video Section */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -418,7 +442,7 @@ export default function Home() {
                 </motion.div>
               ))}
             </motion.div>
-  
+
             {/* Description Section */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -429,7 +453,7 @@ export default function Home() {
               <h2 className="text-xl font-bold text-neutral-200 mb-4">Overview</h2>
               <p className="text-neutral-300">{componentData.component.description}</p>
             </motion.div>
-  
+
             {/* Supplementary Materials Section */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -461,7 +485,7 @@ export default function Home() {
                 </motion.a>
               </div>
             </motion.div>
-  
+
             {/* Quiz Section */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -513,11 +537,10 @@ export default function Home() {
                     {componentData.component.test_series.map((question, index) => (
                       <div key={index} className="mb-4 last:mb-0">
                         <p className="font-semibold text-neutral-300">{question.question}</p>
-                        <p className={`mt-2 ${
-                          quizAnswers[index] === question.answer 
-                            ? 'text-green-400' 
-                            : 'text-red-400'
-                        }`}>
+                        <p className={`mt-2 ${quizAnswers[index] === question.answer
+                          ? 'text-green-400'
+                          : 'text-red-400'
+                          }`}>
                           Your answer: {quizAnswers[index]}
                           {quizAnswers[index] === question.answer ? " ✓" : " ✗"}
                         </p>
@@ -538,10 +561,21 @@ export default function Home() {
               <span>Continue to Next Component</span>
               <ArrowRight />
             </motion.button>
+
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => router.push('/Lobby')}
+              className="w-full px-6 py-4 mb-8 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl flex items-center justify-center space-x-2 transition-all duration-200 font-semibold shadow-lg hover:shadow-blue-500/25"
+            >
+              <span>Join the Community</span>
+              <ArrowRight className="w-5 h-5" />
+            </motion.button>
           </motion.div>
+
         </div>
       )}
     </>
   );
-  
-}
+
+} 

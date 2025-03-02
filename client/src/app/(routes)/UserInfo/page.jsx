@@ -282,27 +282,31 @@ const UserInfoPage = () => {
               <span className="text-neutral-400">{interviewreview.length} interviews</span>
             </div>
             <div className="space-y-4">
-              {interviewreview.length > 0 ? (
-                interviewreview.map((slot) => (
-                  <div className="border border-neutral-700 p-4 rounded-lg bg-neutral-800">
-                  <div className='flex justify-between items-center'>
-                    <h4 className="text-neutral-200 font-semibold text-xl">{slot.internship_name}</h4>
-                    <p className="text-neutral-400 text-md">{slot.company_name}</p>
-                    <p className="text-neutral-400 text-md">{new Date(slot.interviw_time).toLocaleString()}</p>
-                   
-                    {slot.is_selected && (
-                      <div>
-                        <div onClick={handleJoinMeet}>
-                          <button className='bg-green-900 p-2 m-2 rounded-full px-4 text-white'>Join Meet</button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                ))
-              ) : (
-                <p className="text-neutral-400 text-center py-4">No interview slots scheduled</p>
-              )}
+              
+            {interviewreview.length > 0 ? (
+  interviewreview.map((slot) => (
+    <div key={slot.id} className="border border-neutral-700 p-4 rounded-lg bg-neutral-800">
+      <div className='flex justify-between items-center'>
+        <h4 className="text-neutral-200 font-semibold text-xl">{slot.internship_name}</h4>
+        <p className="text-neutral-400 text-md">{slot.company_name}</p>
+        <p className="text-neutral-400 text-md">{new Date(slot.interviw_time).toLocaleString()}</p>
+        {slot.is_selected && (
+          <div>
+            <button
+              onClick={() => handleJoinMeet(slot)}
+              className='bg-green-900 p-2 m-2 rounded-full px-4 text-white'
+            >
+              Join Meet
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  ))
+) : (
+  <p className="text-neutral-400 text-center py-4">No interview slots scheduled</p>
+)}
+
             </div>
           </motion.div>
         </div>

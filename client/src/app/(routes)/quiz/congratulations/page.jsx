@@ -19,8 +19,18 @@ function CongratulationsPage() {
   const total = parseInt(searchParams.get('total') || '12');
   const theme = searchParams.get('theme') || 'Quiz';
   const percentage = Math.round((score / total) * 100);
+  const { setRoadmap,roadmap } = useRoadmap();
   const [roadmapId, setRoadmapId] = useState(null);
-  const { roadmap } = useRoadmap();
+  const [internshipTitle, setInternshipTitle] = useState(null);
+
+
+  useEffect(() => {
+    if (roadmap?.roadmap_id) {
+      console.log("Id in welcome page context :", roadmap.roadmap_id);
+      setRoadmapId(roadmap.roadmap_id);
+    }
+  }, [roadmap]);
+
   const getUserInfo = async () => {
     try {
       const response = await fetch(`http://localhost:8000/api/userdetails/${contextemail}/`, {
@@ -68,6 +78,36 @@ function CongratulationsPage() {
       console.log("idhar ka roadmap ka id hai1",roadmap.roadmap_id)
     }
   }, [roadmap]);
+
+
+  const GetUserTitle = async () => {
+    try {
+      const response = await fetch(`http://localhost:8000/api/internships/${roadmapId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Internship data:", data);
+      setInternshipTitle(data.title);
+    } catch (error) {
+      console.error('Error getting internship details:', error);
+    }
+  };
+  GetUserTitle();
+
+  // useEffect(() => {
+  //   if (roadmapId) {
+  //     GetUserTitle();
+  //   }
+  // }, [roadmapId]);
+
 
   const handleDownloadCertificate = async () => {
     try {
@@ -124,20 +164,20 @@ function CongratulationsPage() {
 
   const handleApplyForInternships = async () => {
     try {
-      console.log("Roadmap title:", roadmap.title);
+      console.log("Roadmap title:", internshipTitle);
       console.log("email:", contextemail);
   
-      const response = await fetch(`http://localhost:8000/api/apply/${contextemail}`, {
+      const response = await fetch(`http://localhost:8000/api/apply/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          "internship_title": contextinput,
+          "internship_title": internshipTitle,
           "email": contextemail
         }), 
       });
-  
+
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }

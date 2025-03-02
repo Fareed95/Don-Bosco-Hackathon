@@ -12,7 +12,7 @@ function MainInput() {
   const [roadmapData, setRoadmapData] = useState(null);
   const [loading, setLoading] = useState(false);
   const { contextemail } = useUserContext();
-  
+
   const MODEL_API_SERVER = process.env.NEXT_PUBLIC_MODEL_API_SERVER;
 
   const loadingStates = [
@@ -93,42 +93,62 @@ function MainInput() {
   };
 
   useEffect(() => {
-  const fetchFullRoadmap = async () => {
-    if (!roadmapData?.roadmap_id) return;
+    const abortController = new AbortController();
 
-    console.log("Sending request to generate-roadmap-all for roadmap_id:", roadmapData.roadmap_id);
-    
-    try {
-      const response = await fetch(`${MODEL_API_SERVER}/generate-roadmap-all`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ id: roadmapData.roadmap_id }),
-      });
+    const fetchFullRoadmap = async () => {
+      if (!roadmapData?.roadmap_id) return;
 
-      console.log("Response:", response);
+      const MAX_RETRIES = 5;
+      let attempts = 0;
+      let success = false;
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+      while (attempts < MAX_RETRIES && !success) {
+        try {
+          console.log("Sending request to generate-roadmap-all for roadmap_id:", roadmapData.roadmap_id);
+
+          const response = await fetch(`${MODEL_API_SERVER}/generate-roadmap-all`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ id: roadmapData.roadmap_id }),
+            signal: abortController.signal, // Pass the abort signal
+          });
+
+          console.log("Response:", response);
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+
+          const data = await response.json();
+          console.log("Roadmap all generated successfully:", data);
+          success = true;
+
+        } catch (error) {
+          console.error(`Attempt ${attempts + 1} failed:`, error);
+          attempts++;
+          if (attempts >= MAX_RETRIES) {
+            console.error("Max retries reached. Failed to generate full roadmap.");
+            break;
+          }
+          // Add a delay before the next attempt (e.g., 2 seconds)
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        }
       }
+    };
 
-      const data = await response.json();
-      console.log("Roadmap all generated successfully:", data);
+    fetchFullRoadmap();
 
-    } catch (error) {
-      console.error("Error generating full roadmap:", error);
-    }
-  };
-
-  fetchFullRoadmap();
-}, [roadmapData]);
-
-  
+    // Cleanup function to abort the fetch request if the component unmounts
+    return () => {
+      abortController.abort();
+    };
+  }, [roadmapData]);
 
   return (
     <div className="max-w-4xl mx-auto w-full px-4">
-      <motion.div 
+      <motion.div
         className="bg-neutral-900/50 border border-neutral-800 rounded-2xl p-6 backdrop-blur-md"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

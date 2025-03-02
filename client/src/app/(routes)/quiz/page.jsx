@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { useUserContext } from '@/app/context/Userinfo';
+import { useRoadmap } from '@/app/context/RoadmapContext';
 const HeroBackground = () => (
   <div className="absolute inset-0 -z-10 overflow-hidden">
     <div className="absolute inset-0 bg-neutral-950" />
@@ -24,8 +25,23 @@ function QuizPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const router = useRouter();
+  const { setRoadmap,roadmap } = useRoadmap();
+  const [roadmapId, setRoadmapId] = useState(null);
+
 
   useEffect(() => {
+
+    if (roadmap?.roadmap_id) {
+      console.log("Id in learning page 1 context :", roadmap.roadmap_id);
+      // console.log("total components in learning page",roadmap.total_components)
+      // console.log("first components in learning page",roadmap.first_component)
+      setRoadmapId(roadmap.roadmap_id);
+      // fetchRoadmapData(roadmap.roadmap_id);
+      // setTotal(roadmap.total_components)
+    }
+    else{
+      router.push('/');
+    }
     const fetchQuestions = async () => {
       try {
         setLoading(true);
@@ -57,7 +73,7 @@ function QuizPage() {
     };
 
     fetchQuestions();
-  }, []);
+  }, [roadmap]);
 
   const handleAnswer = (answer) => {
     if (isAnswered) return;
@@ -77,6 +93,9 @@ function QuizPage() {
         setIsAnswered(false);
       } else {
         // Quiz completed, navigate to results page
+        setRoadmap({
+          roadmap_id: roadmapId,
+        });
         router.push(`/quiz/congratulations?score=${score + (answer === questions[currentQuestionIndex].answer ? 1 : 0)}&total=${questions.length}&topic=Java`);
       }
     }, 1500);
