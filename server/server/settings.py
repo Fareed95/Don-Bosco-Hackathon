@@ -23,7 +23,6 @@ ALLOWED_HOSTS = [
     ]
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    'https://templetrepo.vercel.app/',
 ]
 
 CSRF_TRUSTED_ORIGINS = [
