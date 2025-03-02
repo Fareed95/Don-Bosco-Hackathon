@@ -1,47 +1,122 @@
 "use client"
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import Cookies from 'js-cookie';
 
 const Forms = () => {
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({
-    company: '',
     title: '',
     description: '',
     stipend: '',
     duration: '',
     location: 'remote',
-    address: '',
-    skills: [],
+    skills_required: '',
     openings: '',
-    applicationDeadline: '',
-    postedAt: new Date().toISOString()
+    application_deadline: '',
+    posted_at: new Date().toISOString()
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const existingData = JSON.parse(localStorage.getItem('internships')) || [];
-    const newData = [...existingData, formData];
-    localStorage.setItem('internships', JSON.stringify(newData));
-    setShowModal(false);
-    setFormData({ ...formData, skills: [], postedAt: new Date().toISOString() });
+    console.log('Submitting form data:', formData);
+
+    try {
+      // Get the token from cookies
+
+      // First fetch the user data to get the company ID
+      const response = await fetch('http://localhost:8000/api/user', {
+        method: 'GET', // Changed to GET since we're fetching user data
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const userData = await response.json();
+      console.log('User data received:', userData);
+
+      // Get the company ID from the first company in the array
+      const companyId = userData.companies[0]?.id;
+      if (!companyId) {
+        console.error('No company ID found');
+        alert('No company found for this user');
+        return;
+      }
+      console.log('Company ID:', companyId);
+
+      // Prepare the internship data
+      const internshipData = {
+        company: companyId,
+        title: formData.title,
+        description: formData.description,
+        stipend: formData.stipend,
+        duration: formData.duration,
+        location: formData.location,
+        skills_required: formData.skills_required,
+        openings: parseInt(formData.openings),
+        application_deadline: formData.application_deadline,
+        posted_at: new Date().toISOString()
+      };
+
+      console.log('Sending internship data:', internshipData);
+
+      // Post the internship data
+      const postResponse = await fetch('http://localhost:8000/api/internships/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        credentials: 'include',
+        body: JSON.stringify(internshipData),
+      });
+
+      if (!postResponse.ok) {
+        throw new Error(`HTTP error! status: ${postResponse.status}`);
+      }
+
+      const result = await postResponse.json();
+      console.log('API Response:', result);
+
+      // Reset form and close modal
+      setShowModal(false);
+      setFormData({
+        title: '',
+        description: '',
+        stipend: '',
+        duration: '',
+        location: '',
+        skills_required: '',
+        openings: '',
+        application_deadline: '',
+        posted_at: new Date().toISOString()
+      });
+
+      alert('Internship posted successfully!');
+
+    } catch (error) {
+      console.error('Error posting internship:', error);
+      alert('Failed to post internship. Please try again.');
+    }
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSkillsChange = (e) => {
-    const skills = e.target.value.split(',').map(skill => skill.trim());
-    setFormData(prev => ({ ...prev, skills }));
+    console.log('Form field updated:', name, value);
   };
 
   return (
     <div className="flex justify-center items-center min-h-[calc(100vh-6rem)]">
       <div className="w-full max-w-7xl mx-auto px-4">
         <div className="flex justify-center mb-8">
-          <motion.button 
+          <motion.button
             onClick={() => setShowModal(true)}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -52,13 +127,13 @@ const Forms = () => {
         </div>
 
         {showModal && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50"
           >
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
@@ -73,11 +148,11 @@ const Forms = () => {
 
               <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Text Inputs */}
-                {['company', 'title', 'description', 'stipend', 'duration', 'address', 'openings'].map((field) => (
+                {['title', 'description', 'stipend', 'duration', 'skills_required', 'openings'].map((field) => (
                   <div key={field} className="space-y-2">
                     <label className="block capitalize text-neutral-400 font-medium">{field}</label>
                     <input
-                      type={['stipend', 'duration', 'openings'].includes(field) ? 'number' : 'text'}
+                      type={['stipend', 'openings'].includes(field) ? 'number' : 'text'}
                       name={field}
                       value={formData[field]}
                       onChange={handleChange}
@@ -103,21 +178,10 @@ const Forms = () => {
                   </select>
                 </div>
 
-                {/* Skills Input */}
-                <div className="space-y-2">
-                  <label className="block text-neutral-400 font-medium">Skills (comma separated)</label>
-                  <input
-                    type="text"
-                    value={formData.skills.join(', ')}
-                    onChange={handleSkillsChange}
-                    className="w-full bg-neutral-800/50 border border-neutral-700 p-4 rounded-xl text-neutral-200 focus:outline-none focus:border-neutral-500 transition-colors placeholder-neutral-500"
-                    required
-                    placeholder="React, Node.js, TypeScript"
-                  />
-                </div>
+              
 
                 {/* Date Inputs */}
-                {['applicationDeadline'].map((field) => (
+                {['application_deadline'].map((field) => (
                   <div key={field} className="space-y-2">
                     <label className="block capitalize text-neutral-400 font-medium">{field}</label>
                     <input

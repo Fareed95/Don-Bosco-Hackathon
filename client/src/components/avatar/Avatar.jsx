@@ -1,5 +1,5 @@
 'use client';
-
+import { useUserContext } from '@/app/context/Userinfo';
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Volume2, VolumeX, Settings } from 'lucide-react';
@@ -14,6 +14,7 @@ const HeroBackground = () => (
 );
 
 const Avatar = () => {
+  const { setcontextInterview,contextInterview } = useUserContext(); // Updated hook
   const [isExpanded, setIsExpanded] = useState(true);
   const [isListening, setIsListening] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState('en');
@@ -28,6 +29,10 @@ const Avatar = () => {
   const [showVoiceSettings, setShowVoiceSettings] = useState(false);
   const [speechRate, setSpeechRate] = useState(1);
   const [speechPitch, setSpeechPitch] = useState(1);
+  const timeoutRef = useRef(null);
+  const interimTranscriptRef = useRef('');
+  const [recognition, setRecognition] = useState(null);
+  const [transcript, setTranscript] = useState('');
 
   useEffect(() => {
     // Get available voices and select a default female voice
@@ -47,6 +52,81 @@ const Avatar = () => {
     }
     setVoice();
   }, []);
+
+  // Initialize speech recognition
+  useEffect(() => {
+    // Check if browser supports the Web Speech API
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      console.error('Speech recognition is not supported in this browser');
+      return;
+    }
+
+    // Create the recognition object
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognitionInstance = new SpeechRecognition();
+    
+    // Configure the recognition
+    recognitionInstance.continuous = true;
+    recognitionInstance.interimResults = true;
+    recognitionInstance.lang = 'en-US';
+    
+    // Set up event handlers
+    recognitionInstance.onresult = (event) => {
+      clearTimeout(timeoutRef.current);
+      
+      let finalTranscript = '';
+      let interimTranscript = '';
+      
+      // Process the results
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcriptText = event.results[i][0].transcript;
+        
+        if (event.results[i].isFinal) {
+          finalTranscript += transcriptText;
+          console.log('Final speech (sentence complete):', transcriptText);
+          setTranscript(transcriptText);
+          // Trigger the avatar response when we have final transcript
+          handleUserInput(transcriptText);
+        } else {
+          interimTranscript += transcriptText;
+        }
+      }
+      
+      // Save the interim transcript to check for pauses
+      if (interimTranscript) {
+        interimTranscriptRef.current = interimTranscript;
+        
+        // Set a timeout to detect pauses
+        timeoutRef.current = setTimeout(() => {
+          console.log('Final speech (after 2-second pause):', interimTranscriptRef.current);
+          setTranscript(interimTranscriptRef.current);
+          handleUserInput(interimTranscriptRef.current);
+          interimTranscriptRef.current = '';
+        }, 2000);
+      }
+    };
+    
+    recognitionInstance.onerror = (event) => {
+      console.error('Speech recognition error:', event.error);
+      setIsListening(false);
+    };
+    
+    recognitionInstance.onend = () => {
+      if (isListening) {
+        recognitionInstance.start();
+      }
+    };
+    
+    setRecognition(recognitionInstance);
+    
+    // Cleanup
+    return () => {
+      if (recognition) {
+        recognition.stop();
+      }
+      clearTimeout(timeoutRef.current);
+    };
+  }, [isListening]);
 
   const handleVolumeChange = (e) => {
     const newVolume = parseFloat(e.target.value);
@@ -158,19 +238,36 @@ const Avatar = () => {
     setMessages(prev => [...prev, { type: 'user', content: text }]);
 
     // Mock response with a single test message
-    const sampleText = "Hello! This is a sample response to test the avatar's speech functionality. So please be patient with me. I am a senior HR manager. I am here to help you with your HR needs. basically she is beautiful and she is a senior HR manager.";
+
 
     // Simulate API response delay
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    setResponse(sampleText);
-    setMessages(prev => [...prev, { type: 'ai', content: sampleText }]);
+    setResponse(contextInterview);
+    setMessages(prev => [...prev, { type: 'ai', content: contextInterview }]);
 
     // Speak the response
-    speak(sampleText);
+    speak(contextInterview);
     setIsLoading(false);
   };
 
+  // Update the toggleListening function
+  const toggleListening = () => {
+    if (!recognition) return;
+    
+    if (isListening) {
+      recognition.stop();
+      setIsListening(false);
+      clearTimeout(timeoutRef.current);
+    } else {
+      recognition.start();
+      setIsListening(true);
+    }
+  };
+  useEffect(()=>{
+    console.log("Hello",contextInterview)
+    handleUserInput("Hello, how can I help you?")
+  },[contextInterview])
   return (
     <div className="w-full h-full relative">
       {/* Background with reduced opacity */}
@@ -207,21 +304,40 @@ const Avatar = () => {
             </div>
           )}
 
-          {/* Volume Controls - Only show on hover */}
-          <div className="absolute bottom-0 right-0 p-2 opacity-0 hover:opacity-100 transition-opacity">
-            <button
-              onClick={toggleMute}
-              className="p-1.5 rounded-full bg-black/40 hover:bg-black/60 transition-colors"
-            >
-              {isMuted ? (
-                <VolumeX className="w-4 h-4 text-white/80" />
-              ) : (
-                <Volume2 className="w-4 h-4 text-white/80" />
-              )}
-            </button>
-          </div>
+          {/* Add the caption box below the video */}
+          {/* <div className="absolute bottom-0 left-0 right-0 h-32 bg-black/30 rounded-xl border border-neutral-800/50 backdrop-blur-sm p-4">
+            <div className="h-full flex flex-col">
+              <div className="flex-1 text-neutral-400 text-sm">
+                {transcript || "Your speech will appear here..."}
+              </div>
+              <div className="flex justify-between items-center pt-2 border-t border-neutral-800/50">
+                <div className="flex items-center gap-2">
+                  <div className={`w-2 h-2 rounded-full ${isListening ? 'bg-green-500 animate-pulse' : 'bg-neutral-600'}`}></div>
+                  <span className="text-xs text-neutral-500">{isListening ? 'Listening...' : 'Click to start'}</span>
+                </div>
+                <button
+                  onClick={toggleListening}
+                  className={`px-3 py-1 rounded-lg text-xs ${
+                    isListening 
+                      ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30' 
+                      : 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30'
+                  }`}
+                >
+                  {isListening ? 'Stop' : 'Start'} Listening
+                </button>
+              </div>
+            </div>
+          </div> */}
         </div>
       </div>
+
+      
+      <button 
+
+        className="absolute top-4 right-4 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+      >
+        Start Conversation
+      </button>
     </div>
   );
 };
